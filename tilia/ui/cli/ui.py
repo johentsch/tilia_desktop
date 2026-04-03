@@ -45,6 +45,7 @@ class CLI:
         serve(self, Get.PLAYER_CLASS, self.get_player_class)
         serve(self, Get.FROM_USER_YES_OR_NO, on_ask_yes_or_no)
         serve(self, Get.FROM_USER_SHOULD_SAVE_CHANGES, on_ask_should_save_changes)
+        serve(self, Get.FROM_USER_RETRY_MEDIA_PATH, on_ask_retry_media_path)
 
     def setup_parsers(self):
         timelines.setup_parser(self.subparsers)
@@ -156,4 +157,12 @@ def on_ask_yes_or_no(title: str, prompt: str) -> bool:
 
 
 def on_ask_should_save_changes() -> tuple[bool, bool]:
-    return True, ask_yes_or_no("Save changes to current file?")
+    if sys.stdin.isatty():
+        return True, ask_yes_or_no("Save changes to current file?")
+    return True, False
+
+
+def on_ask_retry_media_path() -> bool:
+    if sys.stdin.isatty():
+        return ask_yes_or_no("Media not found. Try another path?")
+    return False
