@@ -22,13 +22,14 @@ def document(
     timelines: Iterable[tla.Timeline] = (),
     time_unit: str = "seconds",
 ) -> tla.Document:
-    return tla.Document(
+    doc = tla.Document(
         document_id=tla.new_id(),
         format_version=FORMAT_VERSION,
         time_unit=time_unit,
-        media_length=media_length,
         timelines={timeline.id: timeline for timeline in timelines},
     )
+    doc.media_length = media_length
+    return doc
 
 
 def timeline(
