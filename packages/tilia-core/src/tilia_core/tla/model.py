@@ -12,6 +12,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from tilia_core.tla import timetoshare as _timetoshare
+
 Metadata = dict[str, str | list[str]]
 
 # Kinds as the API names them, and as the file spells them (TiLiA 0.7's spelling).
@@ -239,18 +241,27 @@ class Document:
     format_version: str  # as read, before any migration
     time_unit: str = "seconds"
     media_path: str = ""
-    media_length: float | None = None
     media_extra: dict[str, Any] = field(default_factory=dict)  # unknown keys in media
     metadata: Metadata = field(default_factory=dict)
     timelines: dict[str, Timeline] = field(default_factory=dict)
     scores: dict[str, Score] = field(default_factory=dict)
-    # The file's time axes as a TimeToShare manifest, kept as it is; None
-    # without one. `tla.timetoshare.manifest` gives a document's.
-    timetoshare: dict[str, Any] | None = None
+    # The file's time axes as a TimeToShare manifest, kept as it is: the one
+    # place the media's length is kept (`media_length`).
+    timetoshare: dict[str, Any] = field(default_factory=dict)
     app_name: str = "TiLiA"
     extra: dict[str, Any] = field(default_factory=dict)  # keys the core doesn't know
     warnings: list[ReadWarning] = field(default_factory=list)
     origin: Path | None = None  # where it was read from
+
+    @property
+    def media_length(self) -> Any:
+        """Seconds; None when unknown: the length of the manifest's `media`
+        timeline, as it is stored."""
+        return _timetoshare.media_length(self.timetoshare)
+
+    @media_length.setter
+    def media_length(self, length: Any) -> None:
+        _timetoshare.set_media_length(self.timetoshare, length)
 
 
 @dataclass(frozen=True)
