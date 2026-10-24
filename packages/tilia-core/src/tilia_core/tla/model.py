@@ -244,6 +244,9 @@ class Document:
     metadata: Metadata = field(default_factory=dict)
     timelines: dict[str, Timeline] = field(default_factory=dict)
     scores: dict[str, Score] = field(default_factory=dict)
+    # The file's time axes as a TimeToShare manifest, kept as it is; None
+    # without one. `tla.timetoshare.manifest` gives a document's.
+    timetoshare: dict[str, Any] | None = None
     app_name: str = "TiLiA"
     extra: dict[str, Any] = field(default_factory=dict)  # keys the core doesn't know
     warnings: list[ReadWarning] = field(default_factory=list)

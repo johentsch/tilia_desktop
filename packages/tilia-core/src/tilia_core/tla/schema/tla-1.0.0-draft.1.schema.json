@@ -44,6 +44,10 @@
       "description": "Empty for a file without a score (FR-130); written in id order.",
       "type": "array",
       "items": { "$ref": "#/$defs/score" }
+    },
+    "timetoshare": {
+      "description": "The file's time axes, as a TimeToShare manifest (https://github.com/TimeToAlign/TimeToShare), so that any program that reads TimeToShare reads them without knowing TiLiA. Optional: a file without it has the axes `media` and `scores` give. Its root timelines are: `media`, in seconds, of the media's length (null when unknown), when the file has media or its time_unit is seconds; and one for each score, in quarters, its id the score's id, its length null while the core does not compute one. The file's times lie on the root its time_unit names: `media` for seconds; for quarters, its only score's, or `score` when it has none. The manifest may hold more, such as further recordings, their conversion maps and groups; the core keeps what it holds. `tilia_core.tla.timetoshare.manifest` gives the manifest for a document.",
+      "$ref": "https://timetoalign.github.io/timetoshare/0.1.0/timetoshare.schema.json#/$defs/Manifest"
     }
   },
   "$defs": {

@@ -224,7 +224,8 @@ class _Reader:
     def document(self, content: dict[str, Any]) -> Document:
         content = nfc_object(content)
         for key in TOP_SHAPE.keys:
-            self._require(content, key, "")
+            if key in TOP_SHAPE.always:
+                self._require(content, key, "")
         media = self._object(content["media"], "/media")
         for key in MEDIA_SHAPE.keys:
             self._require(media, key, "/media")
@@ -239,6 +240,7 @@ class _Reader:
             metadata=self._metadata(content, ""),
             timelines=self._timelines(content["timelines"], "/timelines"),
             scores=self._scores(content["scores"], "/scores"),
+            timetoshare=nfc_value(content.get("timetoshare")),
             app_name=nfc_value(content["app_name"]),
             extra=_unknown(content, TOP_SHAPE.known),
             origin=origin,

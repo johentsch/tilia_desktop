@@ -377,6 +377,7 @@ def _document(doc: Document) -> dict[str, Any]:
         "metadata": doc.metadata,
         "timelines": doc.timelines,
         "scores": doc.scores,
+        "timetoshare": doc.timetoshare,
     }
     value = _merged("", ("the document's fields", fields), ("extra", doc.extra))
     writers = {"media": _media, "timelines": _timelines, "scores": _scores}

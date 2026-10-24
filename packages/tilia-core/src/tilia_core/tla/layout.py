@@ -44,6 +44,7 @@ TOP_LEVEL = (
     "metadata",
     "timelines",
     "scores",
+    "timetoshare",
 )
 MEDIA = ("path", "length")
 # A timeline's keys before and after its kind's own.
