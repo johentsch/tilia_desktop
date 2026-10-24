@@ -49,6 +49,7 @@ from tilia_core.tla.model import (
     timeline_kind_to_file,
 )
 from tilia_core.tla.parse import MAX_DEPTH
+from tilia_core.tla.timetoshare import manifest
 
 Writer = Callable[[Any, str, "str | int"], Any]
 
@@ -362,10 +363,7 @@ def _scores(scores: Any, parent: str, key: str | int) -> Any:
 def _document(doc: Document) -> dict[str, Any]:
     media = _merged(
         "/media",
-        (
-            "media_path and media_length",
-            {"path": doc.media_path, "length": doc.media_length},
-        ),
+        ("media_path", {"path": doc.media_path}),
         ("media_extra", doc.media_extra),
     )
     fields = {
@@ -377,7 +375,7 @@ def _document(doc: Document) -> dict[str, Any]:
         "metadata": doc.metadata,
         "timelines": doc.timelines,
         "scores": doc.scores,
-        "timetoshare": doc.timetoshare,
+        "timetoshare": manifest(doc),
     }
     value = _merged("", ("the document's fields", fields), ("extra", doc.extra))
     writers = {"media": _media, "timelines": _timelines, "scores": _scores}
@@ -418,10 +416,13 @@ def canonical_bytes(doc: Document) -> bytes:
 
 
 def new_document(*, time_unit: str = "seconds") -> Document:
-    """An empty document in the current format, with a new document id (FR-035)."""
+    """An empty document in the current format, with a new document id (FR-035),
+    and its axes' manifest."""
     if time_unit not in TIME_UNITS:
         units = ", ".join(TIME_UNITS)
         raise ValueError(f"time_unit must be one of {units}, not {time_unit!r}")
-    return Document(
+    doc = Document(
         document_id=new_id(), format_version=FORMAT_VERSION, time_unit=time_unit
     )
+    doc.timetoshare = manifest(doc)
+    return doc
