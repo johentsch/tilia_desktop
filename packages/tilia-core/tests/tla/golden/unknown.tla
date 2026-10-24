@@ -5,7 +5,6 @@
   "time_unit": "quarters",
   "media": {
     "path": "",
-    "length": null,
     "x_media": "kept"
   },
   "metadata": {
@@ -119,6 +118,25 @@
       "x_score": "kept"
     }
   ],
+  "timetoshare": {
+    "id": "019b76da-a800-79cb-a230-176450eb8d0b",
+    "meta": {
+      "x_meta": "kept"
+    },
+    "timelines": [
+      {
+        "id": "019b76da-a805-77b0-8391-1fda846f5140",
+        "length": null,
+        "unit": "quarters"
+      },
+      {
+        "id": "take 2",
+        "length": 61.25,
+        "unit": "seconds"
+      }
+    ],
+    "timetoshare": "0.1.0"
+  },
   "Alpha": 1,
   "zeta": {
     "b": 1,

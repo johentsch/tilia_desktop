@@ -4,10 +4,20 @@
   "document_id": "019b76da-a800-7249-873c-8156e4b0d4a0",
   "time_unit": "seconds",
   "media": {
-    "path": "",
-    "length": null
+    "path": ""
   },
   "metadata": {},
   "timelines": {},
-  "scores": []
+  "scores": [],
+  "timetoshare": {
+    "id": "019b76da-a800-7249-873c-8156e4b0d4a0",
+    "timelines": [
+      {
+        "id": "media",
+        "length": null,
+        "unit": "seconds"
+      }
+    ],
+    "timetoshare": "0.1.0"
+  }
 }

@@ -4,8 +4,7 @@
   "document_id": "019b76da-a800-79f5-942e-404ddead6dc4",
   "time_unit": "seconds",
   "media": {
-    "path": "../audio/Ständchen.flac",
-    "length": 17.5
+    "path": "../audio/Ständchen.flac"
   },
   "metadata": {
     "title": "Ständchen (excerpt)",
@@ -463,5 +462,21 @@
         ""
       ]
     }
-  ]
+  ],
+  "timetoshare": {
+    "id": "019b76da-a800-79f5-942e-404ddead6dc4",
+    "timelines": [
+      {
+        "id": "media",
+        "length": 17.5,
+        "unit": "seconds"
+      },
+      {
+        "id": "019b76da-a80b-77e4-8b4e-dec64d3a7c52",
+        "length": null,
+        "unit": "quarters"
+      }
+    ],
+    "timetoshare": "0.1.0"
+  }
 }

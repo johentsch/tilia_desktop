@@ -63,7 +63,7 @@ def every_kind() -> dict[str, Any]:
         "version": VERSION,
         "document_id": document_id,
         "time_unit": "seconds",
-        "media": {"path": "../audio/Ständchen.flac", "length": 17.5},
+        "media": {"path": "../audio/Ständchen.flac"},
         "metadata": {
             "title": "Ständchen (excerpt)",
             "notes": "",
@@ -377,6 +377,15 @@ def every_kind() -> dict[str, Any]:
                 ],
             }
         ],
+        # Its keys in code-point order, as TimeToShare's writers write them.
+        "timetoshare": {
+            "id": document_id,
+            "timelines": [
+                {"id": "media", "length": 17.5, "unit": "seconds"},
+                {"id": score_id, "length": None, "unit": "quarters"},
+            ],
+            "timetoshare": "0.1.0",
+        },
     }
 
 
@@ -387,10 +396,15 @@ def empty() -> dict[str, Any]:
         "version": VERSION,
         "document_id": make_id("empty", 0),
         "time_unit": "seconds",
-        "media": {"path": "", "length": None},
+        "media": {"path": ""},
         "metadata": {},
         "timelines": {},
         "scores": [],
+        "timetoshare": {
+            "id": make_id("empty", 0),
+            "timelines": [{"id": "media", "length": None, "unit": "seconds"}],
+            "timetoshare": "0.1.0",
+        },
     }
 
 
@@ -410,7 +424,7 @@ def unknown() -> dict[str, Any]:
         "version": VERSION,
         "document_id": document_id,
         "time_unit": "quarters",
-        "media": {"path": "", "length": None, "x_media": "kept"},
+        "media": {"path": "", "x_media": "kept"},
         "metadata": {"title": "Unknown kinds and keys"},
         "timelines": {
             beats: {
@@ -479,6 +493,16 @@ def unknown() -> dict[str, Any]:
                 "x_score": "kept",
             }
         ],
+        # What another program added to the manifest is kept as it is.
+        "timetoshare": {
+            "id": document_id,
+            "meta": {"x_meta": "kept"},
+            "timelines": [
+                {"id": score_id, "length": None, "unit": "quarters"},
+                {"id": "take 2", "length": 61.25, "unit": "seconds"},
+            ],
+            "timetoshare": "0.1.0",
+        },
         "Alpha": 1,
         "zeta": {"b": 1, "a": [1, {"d": 2, "c": 3}]},
         "ärger": "kept",
