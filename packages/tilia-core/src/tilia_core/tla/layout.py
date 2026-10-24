@@ -46,7 +46,7 @@ TOP_LEVEL = (
     "scores",
     "timetoshare",
 )
-MEDIA = ("path", "length")
+MEDIA = ("path",)
 # A timeline's keys before and after its kind's own.
 TIMELINE_BEFORE = ("kind", "name", "ordinal", "height", "is_visible")
 TIMELINE_AFTER = ("measure_table", "metadata", "components")
