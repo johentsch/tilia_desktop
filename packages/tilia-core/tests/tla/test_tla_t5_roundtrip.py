@@ -228,7 +228,10 @@ def test_a_number_json_cannot_hold_raises_naming_its_place(value):
     [
         (lambda doc: doc.extra.update(x=[1, math.nan]), "/x/1"),
         (lambda doc: doc.metadata.update(tempo=math.inf), "/metadata/tempo"),
-        (lambda doc: setattr(doc, "media_length", math.nan), "/media/length"),
+        (
+            lambda doc: setattr(doc, "media_length", math.nan),
+            "/timetoshare/timelines/0/length",
+        ),
         (lambda doc: doc.metadata.update({"a/b~c": math.nan}), "/metadata/a~1b~0c"),
     ],
 )
@@ -630,7 +633,7 @@ def test_an_integer_the_running_python_cant_write_is_refused():
 def test_a_key_set_twice_is_named_with_where_it_was_set():
     doc = tla.read(EVERY_KIND)
     doc.media_extra["path"] = "elsewhere.flac"
-    message = "/media/path: set both in media_path and media_length and in media_extra"
+    message = "/media/path: set both in media_path and in media_extra"
     with pytest.raises(ValueError, match=re.escape(message)):
         tla.canonical_bytes(doc)
 
@@ -886,7 +889,9 @@ def first(content, key):
     [
         (lambda c: c.pop("document_id"), "/document_id"),
         (lambda c: c.update(media=[]), "/media"),
-        (lambda c: c["media"].pop("length"), "/media/length"),
+        (lambda c: c["media"].pop("path"), "/media/path"),
+        (lambda c: c.pop("timetoshare"), "/timetoshare"),
+        (lambda c: c.update(timetoshare=[]), "/timetoshare"),
         (lambda c: c.update(metadata=["title"]), "/metadata"),
         (lambda c: c.update(timelines=[]), "/timelines"),
         (lambda c: c.update(scores={}), "/scores"),

@@ -2,13 +2,11 @@ import json
 
 import pytest
 
-from tilia_core.tla import Score, canonical_bytes, loads, new_document
-from tilia_core.tla.timetoshare import (
-    MEDIA_TIMELINE,
-    SCORE_TIMELINE,
-    manifest,
-    time_axis,
-)
+from tilia_core.tla import Document, Score, canonical_bytes, loads, new_document
+from tilia_core.tla.timetoshare import MEDIA_TIMELINE, manifest, time_axis
+
+SCORE = "01900000-0000-7000-8000-000000000001"
+OTHER_SCORE = "01900000-0000-7000-8000-000000000002"
 
 
 def _with_score(document, score_id):
@@ -16,95 +14,113 @@ def _with_score(document, score_id):
     return document
 
 
-def test_a_seconds_file_has_the_media_axis():
+def _written(document):
+    return json.loads(canonical_bytes(document))
+
+
+def test_a_new_document_has_the_media_axis_of_unknown_length():
     doc = new_document()
-    doc.media_path = "recordings/take 1.mp3"
-    doc.media_length = 183
-    assert manifest(doc) == {
-        "timetoshare": "0.1.0",
+    assert doc.timetoshare == {
         "id": doc.document_id,
-        "timelines": [
-            {"id": "media", "unit": "seconds", "length": 183.0, "name": "take 1.mp3"}
-        ],
+        "timelines": [{"id": "media", "length": None, "unit": "seconds"}],
+        "timetoshare": "0.1.0",
     }
+    assert doc.media_length is None
     assert time_axis(doc) == MEDIA_TIMELINE
 
 
-def test_a_seconds_file_without_media_has_a_media_axis_of_unknown_length():
+def test_the_media_length_is_kept_in_the_manifest_only():
     doc = new_document()
-    assert manifest(doc)["timelines"] == [
-        {"id": "media", "unit": "seconds", "length": None}
+    doc.media_path = "recordings/take 1.mp3"
+    doc.media_length = 183.5
+    written = _written(doc)
+    assert written["media"] == {"path": "recordings/take 1.mp3"}
+    assert written["timetoshare"]["timelines"] == [
+        {"id": "media", "length": 183.5, "unit": "seconds"}
     ]
+    assert loads(canonical_bytes(doc)).media_length == 183.5
 
 
-@pytest.mark.parametrize("length", [0, -1.5, True, 10**400, "12"])
-def test_a_media_length_the_format_does_not_allow_is_unknown(length):
+def test_the_media_length_is_read_from_the_manifest():
     doc = new_document()
-    doc.media_length = length
-    assert manifest(doc)["timelines"][0]["length"] is None
+    content = _written(doc)
+    content["timetoshare"]["timelines"][0]["length"] = 61.25
+    assert loads(json.dumps(content).encode()).media_length == 61.25
+
+
+def test_setting_a_length_adds_the_media_axis_where_it_is_missing():
+    doc = Document(document_id=SCORE, format_version="1.0.0-draft.1")
+    assert doc.media_length is None
+    doc.media_length = 2.0
+    assert doc.timetoshare == {
+        "timetoshare": "0.1.0",
+        "timelines": [{"id": "media", "unit": "seconds", "length": 2.0}],
+    }
+
+
+def test_a_manifest_without_the_media_axis_has_no_length():
+    doc = new_document()
+    doc.timetoshare = {"timetoshare": "0.1.0", "timelines": "not a list"}
+    assert doc.media_length is None
 
 
 def test_media_and_scores_each_have_an_axis():
     doc = new_document()
     doc.media_path = "a.ogg"
-    doc.media_length = 10.5
-    second, first = (
-        "01900000-0000-7000-8000-000000000002",
-        "01900000-0000-7000-8000-000000000001",
-    )
-    _with_score(_with_score(doc, second), first)
+    _with_score(_with_score(doc, OTHER_SCORE), SCORE)
     timelines = manifest(doc)["timelines"]
-    assert [t["id"] for t in timelines] == [MEDIA_TIMELINE, first, second]
+    assert [t["id"] for t in timelines] == [MEDIA_TIMELINE, SCORE, OTHER_SCORE]
     assert [t["unit"] for t in timelines] == ["seconds", "quarters", "quarters"]
 
 
 def test_a_quarters_file_lies_on_its_score():
-    doc = _with_score(
-        new_document(time_unit="quarters"), "01900000-0000-7000-8000-000000000001"
-    )
+    doc = _with_score(new_document(time_unit="quarters"), SCORE)
     assert manifest(doc)["timelines"] == [
-        {
-            "id": "01900000-0000-7000-8000-000000000001",
-            "unit": "quarters",
-            "length": None,
-        }
+        {"id": SCORE, "length": None, "unit": "quarters"}
     ]
-    assert time_axis(doc) == "01900000-0000-7000-8000-000000000001"
+    assert time_axis(doc) == SCORE
 
 
-def test_a_quarters_file_without_a_score_has_a_score_axis():
+@pytest.mark.parametrize("scores", [[], [SCORE, OTHER_SCORE]])
+def test_a_quarters_file_without_one_score_has_no_axis(scores):
     doc = new_document(time_unit="quarters")
-    assert [t["id"] for t in manifest(doc)["timelines"]] == [SCORE_TIMELINE]
-    assert time_axis(doc) == SCORE_TIMELINE
-
-
-def test_a_quarters_file_with_several_scores_has_no_one_axis():
-    doc = new_document(time_unit="quarters")
-    _with_score(doc, "01900000-0000-7000-8000-000000000001")
-    _with_score(doc, "01900000-0000-7000-8000-000000000002")
+    for score_id in scores:
+        _with_score(doc, score_id)
     assert time_axis(doc) is None
+    assert [t["id"] for t in manifest(doc)["timelines"]] == scores
 
 
-def test_the_manifest_is_kept_as_written():
+def test_what_the_manifest_holds_is_kept():
     doc = new_document()
     doc.media_length = 60.0
-    held = manifest(doc)
     # What another program added: a second recording, aligned with the media.
-    held["timelines"].append({"id": "take 2", "unit": "seconds", "length": 61.25})
-    held["groups"] = [{"id": "takes", "members": ["media", "take 2"]}]
-    doc.timetoshare = held
+    doc.timetoshare["timelines"].append(
+        {"id": "take 2", "unit": "seconds", "length": 61.25}
+    )
+    doc.timetoshare["groups"] = [{"id": "takes", "members": ["media", "take 2"]}]
     written = canonical_bytes(doc)
     again = loads(written)
-    assert again.timetoshare == held
+    assert again.timetoshare["groups"] == [
+        {"id": "takes", "members": ["media", "take 2"]}
+    ]
+    assert again.timetoshare["timelines"][1] == {
+        "id": "take 2",
+        "length": 61.25,
+        "unit": "seconds",
+    }
     assert canonical_bytes(again) == written
-    assert json.loads(written)["timetoshare"] == held
 
 
-def test_a_file_without_a_manifest_has_none():
+def test_the_manifest_is_written_in_one_key_order():
     doc = new_document()
-    written = canonical_bytes(doc)
-    assert "timetoshare" not in json.loads(written)
-    assert loads(written).timetoshare is None
+    doc.timetoshare = {
+        "timetoshare": "0.1.0",
+        "timelines": [{"unit": "seconds", "length": 1.0, "id": "media"}],
+        "id": doc.document_id,
+    }
+    timetoshare = _written(doc)["timetoshare"]
+    assert list(timetoshare) == ["id", "timelines", "timetoshare"]
+    assert list(timetoshare["timelines"][0]) == ["id", "length", "unit"]
 
 
 def test_the_manifest_is_valid_timetoshare():
@@ -112,6 +128,6 @@ def test_the_manifest_is_valid_timetoshare():
     doc = new_document()
     doc.media_path = "a.wav"
     doc.media_length = 3.25
-    _with_score(doc, "01900000-0000-7000-8000-000000000001")
+    _with_score(doc, SCORE)
     timetoshare.validate(manifest(doc))
     timetoshare.validate(manifest(new_document(time_unit="quarters")))
